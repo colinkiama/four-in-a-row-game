@@ -75,6 +75,9 @@ export default class FourInARowGame {
     }
 
     performMove(columnIndex) {
+        // TODO: Replace slice with a deep copy method.
+        // Inner arrays in 2D arrays in JavaScript are still references 
+        // when you use the slice method!
         let nextBoard = this.history.slice(this.history.length - 1)[0];
         if (columnIndex < 0 && columnIndex >= BoardDimensions.COLUMNS) {
             return {
