@@ -14,18 +14,18 @@ export const MoveStatus = {
 
 export const PlayerColor = {
     NONE: 'none',
+    YELLOW: 'yellow',
     RED: 'red',
-    YELLOW: 'yellow'
 };
 
 export const BoardDimensions = {
     ROWS: 6,
     COLUMNS: 7,
-    WIN_LINE_LENGTH: 4
+    WIN_LINE_LENGTH: 4,
 };
 
 export const BoardToken = {
     NONE: 0,
     YELLOW: 1,
-    RED: 2
+    RED: 2,
 };
