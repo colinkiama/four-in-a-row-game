@@ -25,10 +25,21 @@ export default class FourInARowGame {
         if (instanceOptions.history) {
             this.history = instanceOptions.history;
         } else {
-            this.history = [this.createBoard()];
+            this.history = [FourInARowGame.createBoard()];
         }
 
         this.status = GameStatus.START;
+    }
+
+    static createBoard() {
+        let board = new Array(BoardDimensions.ROWS);
+
+        for (let i = 0; i < BoardDimensions.ROWS; i++) {
+            board[i] = new Array(BoardDimensions.COLUMNS);
+            board[i].fill(BoardToken.NONE);
+        }
+
+        return board;
     }
 
     static boardTokenToPlayerColor(boardToken) {
@@ -51,6 +62,19 @@ export default class FourInARowGame {
             default:
                 return BoardToken.NONE;
         }
+    }
+
+    static deepBoardCopy(oldBoard) {
+        let newBoard = new Array(BoardDimensions.ROWS);
+
+        for (let rowIndex = 0; rowIndex < BoardDimensions.ROWS; rowIndex++) {
+            newBoard[rowIndex] = new Array(BoardDimensions.COLUMNS);
+            for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
+                newBoard[rowIndex][columnIndex] = oldBoard[rowIndex][columnIndex];
+            }
+        }
+
+        return newBoard;
     }
 
     playMove(columnIndex) {
@@ -78,7 +102,8 @@ export default class FourInARowGame {
         // TODO: Replace slice with a deep copy method.
         // Inner arrays in 2D arrays in JavaScript are still references 
         // when you use the slice method!
-        let nextBoard = this.history.slice(this.history.length - 1)[0];
+        // let nextBoard = this.history.slice(this.history.length - 1)[0];
+        let nextBoard = FourInARowGame.deepBoardCopy(this.history[this.history.length - 1]);
         if (columnIndex < 0 && columnIndex >= BoardDimensions.COLUMNS) {
             return {
                 board: nextBoard,
@@ -91,7 +116,7 @@ export default class FourInARowGame {
             }
         }
 
-        let boardChangeResult = this.tryPlayMove(columnIndex, nextBoard);
+        let boardChangeResult = this.tryPerformMove(columnIndex, nextBoard);
         if (boardChangeResult.status === MoveStatus.INVALID) {
             return {
                 board: nextBoard,
@@ -146,7 +171,7 @@ export default class FourInARowGame {
         };
     }
 
-    tryPlayMove(columnIndex, nextBoard) {
+    tryPerformMove(columnIndex, nextBoard) {
         let isMoveValid = false;
 
         for (let i = nextBoard.length - 1; i > -1; i--) {
@@ -173,16 +198,7 @@ export default class FourInARowGame {
         };
     }
 
-    createBoard() {
-        let board = new Array(BoardDimensions.ROWS);
 
-        for (let i = 0; i < BoardDimensions.ROWS; i++) {
-            board[i] = new Array(BoardDimensions.COLUMNS);
-            board[i].fill(BoardToken.NONE);
-        }
-
-        return board;
-    }
 
     checkForFilledBoard(board) {
         for (let j = 0; j < board.length; j++) {
