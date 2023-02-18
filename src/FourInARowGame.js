@@ -259,10 +259,9 @@ export default class FourInARowGame {
 
         const tokenCheck = (rowIndex, columnIndex, tokenType) => {
             if (tokenType === board[rowIndex][columnIndex]
-                === board[rowIndex - 1][columnIndex]
-                === board[rowIndex - 2][columnIndex]
-                === board[rowIndex - 3][columnIndex]) {
-
+                && tokenType === board[rowIndex - 1][columnIndex]
+                && tokenType === board[rowIndex - 2][columnIndex]
+                && tokenType === board[rowIndex - 3][columnIndex]) {
                 return {
                     winLine: [
                         { row: rowIndex, column: columnIndex },
