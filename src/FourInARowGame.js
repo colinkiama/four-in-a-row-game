@@ -35,7 +35,7 @@ export default class FourInARowGame {
         let board = new Array(BoardDimensions.ROWS);
 
         for (let i = 0; i < BoardDimensions.ROWS; i++) {
-            board[i] = new Array(BoardDimensions.COLUMNS);
+            board[i] = new Uint8Array(BoardDimensions.COLUMNS);
             board[i].fill(BoardToken.NONE);
         }
 
@@ -68,7 +68,7 @@ export default class FourInARowGame {
         let newBoard = new Array(BoardDimensions.ROWS);
 
         for (let rowIndex = 0; rowIndex < BoardDimensions.ROWS; rowIndex++) {
-            newBoard[rowIndex] = new Array(BoardDimensions.COLUMNS);
+            newBoard[rowIndex] = new Uint8Array(BoardDimensions.COLUMNS);
             for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
                 newBoard[rowIndex][columnIndex] = oldBoard[rowIndex][columnIndex];
             }
@@ -273,8 +273,6 @@ export default class FourInARowGame {
                 }
             }
 
-
-
             return {
                 winLine: []
             }
@@ -282,7 +280,7 @@ export default class FourInARowGame {
 
         let additionalBoardPositions = BoardDimensions.ROWS - BoardDimensions.WIN_LINE_LENGTH;
         for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
-            for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > 0; rowIndex--) {
+            for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > -1; rowIndex--) {
 
                 let yellowTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.YELLOW);
                 if (yellowTokenCheckResult.winLine.length > 0) {
@@ -310,17 +308,16 @@ export default class FourInARowGame {
         }
 
         const tokenCheck = (rowIndex, columnIndex, tokenType) => {
-            if (board[rowIndex][columnIndex]
-                === board[rowIndex][columnIndex - 1]
-                === board[rowIndex][columnIndex - 2]
-                === board[rowIndex][columnIndex - 3]
-                === tokenType) {
+            if (tokenType === board[rowIndex][columnIndex]
+                && tokenType === board[rowIndex][columnIndex - 1]
+                && tokenType === board[rowIndex][columnIndex - 2]
+                && tokenType === board[rowIndex][columnIndex - 3]) {
                 return {
                     winLine: [
                         { row: rowIndex, column: columnIndex },
                         { row: rowIndex, column: columnIndex - 1 },
-                        { row: rowIndex, columN: columnIndex - 2 },
-                        { row: rowIndex, columN: columnIndex - 3 },
+                        { row: rowIndex, column: columnIndex - 2 },
+                        { row: rowIndex, column: columnIndex - 3 },
                     ],
                     winner: FourInARowGame.boardTokenToPlayerColor(tokenType)
                 }
@@ -333,7 +330,7 @@ export default class FourInARowGame {
 
         let additionalBoardPositions = BoardDimensions.COLUMNS - BoardDimensions.WIN_LINE_LENGTH;
         for (let rowIndex = 0; rowIndex < BoardDimensions.ROWS; rowIndex++) {
-            for (let columnIndex = BoardDimensions.COLUMNS - 1; columnIndex - additionalBoardPositions > 0; columnIndex--) {
+            for (let columnIndex = BoardDimensions.COLUMNS - 1; columnIndex - additionalBoardPositions > -1; columnIndex--) {
                 let yellowTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.YELLOW);
                 if (yellowTokenCheckResult.winLine.length > 0) {
                     return yellowTokenCheckResult;
@@ -341,7 +338,7 @@ export default class FourInARowGame {
 
                 let redTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.RED);
                 if (redTokenCheckResult.winLine.length > 0) {
-                    return redTokencheckResult;
+                    return redTokenCheckResult;
                 }
             }
         }
@@ -385,11 +382,10 @@ export default class FourInARowGame {
             // right side of the board)
             if (rowIndex + 1 >= BoardDimensions.WIN_LINE_LENGTH
                 && columnIndex + BoardDimensions.WIN_LINE_LENGTH - 1 < BoardDimensions.COLUMNS) {
-                if (board[rowIndex][columnIndex]
-                    === board[rowIndex - 1][columnIndex + 1]
-                    === board[rowIndex - 2][columnIndex + 2]
-                    === board[rowIndex - 3][columnIndex + 3]
-                    === tokenType) {
+                if (tokenType == board[rowIndex][columnIndex]
+                    && tokenType === board[rowIndex - 1][columnIndex + 1]
+                    && tokenType === board[rowIndex - 2][columnIndex + 2]
+                    && tokenType === board[rowIndex - 3][columnIndex + 3]) {
                     return {
                         winLine: [
                             { row: rowIndex, column: columnIndex },
@@ -411,7 +407,7 @@ export default class FourInARowGame {
 
         let additionalBoardPositions = BoardDimensions.ROWS - BoardDimensions.WIN_LINE_LENGTH;
         for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
-            for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > 0; rowIndex--) {
+            for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > -1; rowIndex--) {
                 let yellowTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.YELLOW);
                 if (yellowTokenCheckResult.winLine.length > 0) {
                     return yellowTokenCheckResult;
@@ -419,7 +415,7 @@ export default class FourInARowGame {
 
                 let redTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.RED);
                 if (redTokenCheckResult.winLine.length > 0) {
-                    return redTokencheckResult;
+                    return redTokenCheckResult;
                 }
             }
         }
