@@ -12,14 +12,17 @@ export default class FourInARowGame {
     /**
      * options = {
      *   startingColor?: PlayerColor
-     *   history?: Board[]      
+     *   history?: Board[]     
+     * 
+     * These options are useful for things like: resuming a game in progress
+     * from loaded save data or just changing which player 
+     * starts the game etc.
      * }
      *  
      */
     constructor(options) {
         let instanceOptions = options || {};
         this.startingColor = instanceOptions.startingColor || PlayerColor.YELLOW;
-        this.currentTurn = this.startingColor;
         this.history = instanceOptions.history;
 
         if (instanceOptions.history) {
@@ -29,6 +32,7 @@ export default class FourInARowGame {
         }
 
         this.status = GameStatus.START;
+        this.currentTurn = this.updateCurrentTurn(this.history, this.startingColor);
     }
 
     static createBoard() {
@@ -78,31 +82,37 @@ export default class FourInARowGame {
     }
 
     playMove(columnIndex) {
-        if (this.status === GameStatus.START) {
-            this.status = GameStatus.IN_PROGRESS;
+        switch (this.status) {
+            case GameStatus.START:
+                this.status = GameStatus.IN_PROGRESS;
+                break;
+            case GameStatus.DRAW:
+            case GameStatus.WIN:
+                // The game is over at thispoint so
+                // re-evaluate the latest board, returning the same game status
+                // and board details. 
+                return this.evaluateGame(this.history[this.history.length - 1]);
+            default:
+                break;
         }
 
         let moveResults = this.performMove(columnIndex);
-        this.updateCurrentTurn();
+        this.currentTurn = this.updateCurrentTurn(this.history, this.startingColor);
         return moveResults;
     }
 
-    updateCurrentTurn() {
+    updateCurrentTurn(history, startingColor) {
         // Current player's turn change with each go. With each turn history increases by 1.
         // However, by default, history has a length of 1 because of the initial state of the board is pushed first.
-        let historyLengthHasEvenParity = this.history.length % 2 === 0;
-        if (this.startingColor === PlayerColor.RED) {
-            this.currentTurn = historyLengthHasEvenParity ? PlayerColor.YELLOW : PlayerColor.RED;
+        let historyLengthHasEvenParity = history.length % 2 === 0;
+        if (startingColor === PlayerColor.YELLOW) {
+            return historyLengthHasEvenParity ? PlayerColor.RED : PlayerColor.YELLOW;
         } else {
-            this.currentTurn = historyLengthHasEvenParity ? PlayerColor.RED : PlayerColor.YELLOW
+            return historyLengthHasEvenParity ? PlayerColor.YELLOW : PlayerColor.RED
         }
     }
 
     performMove(columnIndex) {
-        // TODO: Replace slice with a deep copy method.
-        // Inner arrays in 2D arrays in JavaScript are still references 
-        // when you use the slice method!
-        // let nextBoard = this.history.slice(this.history.length - 1)[0];
         let nextBoard = FourInARowGame.deepBoardCopy(this.history[this.history.length - 1]);
         if (columnIndex < 0 && columnIndex >= BoardDimensions.COLUMNS) {
             return {
@@ -116,8 +126,9 @@ export default class FourInARowGame {
             }
         }
 
-        let boardChangeResult = this.tryPerformMove(columnIndex, nextBoard);
-        if (boardChangeResult.status === MoveStatus.INVALID) {
+        let moveResult = this.tryPerformMove(columnIndex, nextBoard);
+
+        if (moveResult.status === MoveStatus.INVALID) {
             return {
                 board: nextBoard,
                 winner: PlayerColor.NONE,
@@ -130,13 +141,17 @@ export default class FourInARowGame {
         }
 
         // From this point, the board move was successful. 
-        this.history.push(boardChangeResult.board);
+        this.history.push(moveResult.board);
 
-        let winCheckResult = this.checkForWin(nextBoard);
+        return this.evaluateGame(moveResult.board);
+    }
+
+    evaluateGame(board) {
+        let winCheckResult = this.checkForWin(board);
         if (winCheckResult.winner !== PlayerColor.NONE) {
             this.status = GameStatus.WIN;
             return {
-                board: nextBoard,
+                board: board,
                 winner: winCheckResult.winner,
                 status: {
                     value: MoveStatus.WIN
@@ -147,11 +162,11 @@ export default class FourInARowGame {
 
         // If board is full right now, we can assume the game to be a draw
         // since there weren't any winning lines detected.
-        if (this.checkForFilledBoard(nextBoard)) {
+        if (this.checkForFilledBoard(board)) {
             this.status = GameStatus.DRAW;
 
             return {
-                board: nextBoard,
+                board: board,
                 winner: PlayerColor.NONE,
                 status: {
                     value: MoveStatus.DRAW
@@ -159,10 +174,11 @@ export default class FourInARowGame {
                 winLine: []
             }
         }
+
         // From this point, we can assume that a succesful move was made and the game will
         // continue on.
         return {
-            board: nextBoard,
+            board: board,
             winner: PlayerColor.NONE,
             status: {
                 value: MoveStatus.SUCCESS
@@ -197,8 +213,6 @@ export default class FourInARowGame {
             board: nextBoard
         };
     }
-
-
 
     checkForFilledBoard(board) {
         for (let j = 0; j < board.length; j++) {
