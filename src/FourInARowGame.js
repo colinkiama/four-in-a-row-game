@@ -274,7 +274,7 @@ export default class FourInARowGame {
      * 
      * Any missing options will be 0 by default.
      */
-    countInALine(board, options) {
+    tryFindWinningLine(board, options) {
         // If `options` is null/undefined, set it's value to an empty object.
         options = options || {};
 
@@ -342,7 +342,7 @@ export default class FourInARowGame {
         let additionalBoardPositions = BoardDimensions.ROWS - BoardDimensions.WIN_LINE_LENGTH;
         for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
             for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > -1; rowIndex--) {
-                return this.countInALine(board, {
+                return this.tryFindWinningLine(board, {
                     startRowIndex: rowIndex,
                     startColumnIndex: columnIndex,
                     rowCountStep: -1,
@@ -365,7 +365,7 @@ export default class FourInARowGame {
         let additionalBoardPositions = BoardDimensions.COLUMNS - BoardDimensions.WIN_LINE_LENGTH;
         for (let rowIndex = 0; rowIndex < BoardDimensions.ROWS; rowIndex++) {
             for (let columnIndex = BoardDimensions.COLUMNS - 1; columnIndex - additionalBoardPositions > -1; columnIndex--) {
-                return this.countInALine(board, {
+                return this.tryFindWinningLine(board, {
                     startRowIndex: rowIndex,
                     startColumnIndex: columnIndex,
                     columnCountStep: -1,
@@ -388,7 +388,7 @@ export default class FourInARowGame {
         let additionalBoardPositions = BoardDimensions.ROWS - BoardDimensions.WIN_LINE_LENGTH;
         for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
             for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > -1; rowIndex--) {
-                let leftDirectionCheckResult = this.countInALine(board, {
+                let leftDirectionCheckResult = this.tryFindWinningLine(board, {
                     startRowIndex: rowIndex,
                     startColumnIndex: columnIndex,
                     rowCountStep: -1,
@@ -399,7 +399,7 @@ export default class FourInARowGame {
                     return leftDirectionCheckResult;
                 }
 
-                let rightDirectionCheckResult = this.countInALine(board, {
+                let rightDirectionCheckResult = this.tryFindWinningLine(board, {
                     startRowIndex: rowIndex,
                     startColumnIndex: columnIndex,
                     rowCountStep: -1,
