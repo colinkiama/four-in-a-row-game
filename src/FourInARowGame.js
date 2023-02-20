@@ -8,7 +8,6 @@ export default class FourInARowGame {
     status;
     history;
 
-
     /**
      * options = {
      *   startingColor?: PlayerColor
@@ -264,6 +263,75 @@ export default class FourInARowGame {
         };
     }
 
+    /**
+     * 
+     * options: {
+     *     startRowIndex,
+     *     startColumnIndex,
+     *     rowCountStep,
+     *     columnCountStep
+     * }
+     * 
+     * Any missing options will be 0 by default.
+     */
+    countInALine(board, options) {
+        // If `options` is null/undefined, set it's value to an empty object.
+        options = options || {};
+
+        let config = {
+            startRowIndex: options.startRowIndex || 0,
+            startColumnIndex: options.startColumnIndex || 0,
+            rowCountStep: options.rowCountStep || 0,
+            columnCountStep: options.columnCountStep || 0
+        };
+
+        let count = 0;
+        let tokenToCheck = BoardToken.NONE;
+
+        for (let i = 0; i < BoardDimensions.WIN_LINE_LENGTH; i++) {
+            let currentToken = board[config.startRowIndex + config.rowCountStep * i][config.startColumnIndex + config.columnCountStep * i];
+            if (currentToken === BoardToken.NONE) {
+                break;
+            }
+
+            if (tokenToCheck === BoardToken.NONE) {
+                tokenToCheck = currentToken;
+            }
+
+            if (currentToken === tokenToCheck) {
+                count++;
+            }
+        }
+
+        if (count === BoardDimensions.WIN_LINE_LENGTH) {
+            return {
+                winLine: [
+                    {
+                        row: config.startRowIndex,
+                        column: config.startColumnIndex
+                    },
+                    {
+                        row: config.startRowIndex + config.rowCountStep,
+                        column: config.startColumnIndex + config.columnCountStep
+                    },
+                    {
+                        row: config.startRowIndex + config.rowCountStep * 2,
+                        column: config.startColumnIndex + config.columnCountStep * 2
+                    },
+                    {
+                        row: config.startRowIndex + config.rowCountStep * 3,
+                        column: config.startColumnIndex + config.columnCountStep * 3
+                    },
+                ],
+                winner: FourInARowGame.boardTokenToPlayerColor(tokenToCheck),
+            };
+        }
+
+        return {
+            winLine: []
+        };
+    }
+
     checkForVerticalWin(board) {
         if (BoardDimensions.ROWS < BoardDimensions.WIN_LINE_LENGTH) {
             return {
@@ -271,47 +339,20 @@ export default class FourInARowGame {
             };
         }
 
-        const tokenCheck = (rowIndex, columnIndex, tokenType) => {
-            if (tokenType === board[rowIndex][columnIndex]
-                && tokenType === board[rowIndex - 1][columnIndex]
-                && tokenType === board[rowIndex - 2][columnIndex]
-                && tokenType === board[rowIndex - 3][columnIndex]) {
-                return {
-                    winLine: [
-                        { row: rowIndex, column: columnIndex },
-                        { row: rowIndex - 1, column: columnIndex },
-                        { row: rowIndex - 2, column: columnIndex },
-                        { row: rowIndex - 3, column: columnIndex },
-                    ],
-                    winner: FourInARowGame.boardTokenToPlayerColor(tokenType)
-                }
-            }
-
-            return {
-                winLine: []
-            }
-        }
-
         let additionalBoardPositions = BoardDimensions.ROWS - BoardDimensions.WIN_LINE_LENGTH;
         for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
             for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > -1; rowIndex--) {
-
-                let yellowTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.YELLOW);
-                if (yellowTokenCheckResult.winLine.length > 0) {
-                    return yellowTokenCheckResult;
-                }
-
-                let redTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.RED);
-                if (redTokenCheckResult.winLine.length > 0) {
-                    return redTokenCheckResult;
-                }
+                return this.countInALine(board, {
+                    startRowIndex: rowIndex,
+                    startColumnIndex: columnIndex,
+                    rowCountStep: -1,
+                });
             }
         }
 
         return {
             winLine: []
         };
-
     }
 
     checkForHorizontalWin(board) {
@@ -321,39 +362,14 @@ export default class FourInARowGame {
             };
         }
 
-        const tokenCheck = (rowIndex, columnIndex, tokenType) => {
-            if (tokenType === board[rowIndex][columnIndex]
-                && tokenType === board[rowIndex][columnIndex - 1]
-                && tokenType === board[rowIndex][columnIndex - 2]
-                && tokenType === board[rowIndex][columnIndex - 3]) {
-                return {
-                    winLine: [
-                        { row: rowIndex, column: columnIndex },
-                        { row: rowIndex, column: columnIndex - 1 },
-                        { row: rowIndex, column: columnIndex - 2 },
-                        { row: rowIndex, column: columnIndex - 3 },
-                    ],
-                    winner: FourInARowGame.boardTokenToPlayerColor(tokenType)
-                }
-            }
-
-            return {
-                winLine: []
-            }
-        }
-
         let additionalBoardPositions = BoardDimensions.COLUMNS - BoardDimensions.WIN_LINE_LENGTH;
         for (let rowIndex = 0; rowIndex < BoardDimensions.ROWS; rowIndex++) {
             for (let columnIndex = BoardDimensions.COLUMNS - 1; columnIndex - additionalBoardPositions > -1; columnIndex--) {
-                let yellowTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.YELLOW);
-                if (yellowTokenCheckResult.winLine.length > 0) {
-                    return yellowTokenCheckResult;
-                }
-
-                let redTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.RED);
-                if (redTokenCheckResult.winLine.length > 0) {
-                    return redTokenCheckResult;
-                }
+                return this.countInALine(board, {
+                    startRowIndex: rowIndex,
+                    startColumnIndex: columnIndex,
+                    columnCountStep: -1,
+                });
             }
         }
 
@@ -369,67 +385,29 @@ export default class FourInARowGame {
             };
         }
 
-        const tokenCheck = (rowIndex, columnIndex, tokenType) => {
-            // Try left direction first (starting down, going upwards
-            // towards left side of the board)
-
-            if (rowIndex + 1 >= BoardDimensions.WIN_LINE_LENGTH
-                && columnIndex + 1 >= BoardDimensions.WIN_LINE_LENGTH) {
-                if (board[rowIndex][columnIndex]
-                    === board[rowIndex - 1][columnIndex - 1]
-                    === board[rowIndex - 2][columnIndex - 2]
-                    === board[rowIndex - 3][columnIndex - 3]
-                    === tokenType) {
-                    return {
-                        winLine: [
-                            { row: rowIndex, column: columnIndex },
-                            { row: rowIndex - 1, column: columnIndex - 1 },
-                            { row: rowIndex - 2, column: columnIndex - 2 },
-                            { row: rowIndex - 3, column: columnIndex - 3 },
-                        ],
-                        winner: FourInARowGame.boardTokenToPlayerColor(tokenType)
-                    }
-                }
-            }
-
-            // Now try right direction (starting down, going upwards towards
-            // right side of the board)
-            if (rowIndex + 1 >= BoardDimensions.WIN_LINE_LENGTH
-                && columnIndex + BoardDimensions.WIN_LINE_LENGTH - 1 < BoardDimensions.COLUMNS) {
-                if (tokenType == board[rowIndex][columnIndex]
-                    && tokenType === board[rowIndex - 1][columnIndex + 1]
-                    && tokenType === board[rowIndex - 2][columnIndex + 2]
-                    && tokenType === board[rowIndex - 3][columnIndex + 3]) {
-                    return {
-                        winLine: [
-                            { row: rowIndex, column: columnIndex },
-                            { row: rowIndex - 1, column: columnIndex + 1 },
-                            { row: rowIndex - 2, column: columnIndex + 2 },
-                            { row: rowIndex - 3, column: columnIndex + 3 },
-                        ],
-                        winner: FourInARowGame.boardTokenToPlayerColor(tokenType)
-                    }
-                }
-            }
-
-            // No win lines found at this position
-
-            return {
-                winLine: []
-            }
-        }
-
         let additionalBoardPositions = BoardDimensions.ROWS - BoardDimensions.WIN_LINE_LENGTH;
         for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
             for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > -1; rowIndex--) {
-                let yellowTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.YELLOW);
-                if (yellowTokenCheckResult.winLine.length > 0) {
-                    return yellowTokenCheckResult;
+                let leftDirectionCheckResult = this.countInALine(board, {
+                    startRowIndex: rowIndex,
+                    startColumnIndex: columnIndex,
+                    rowCountStep: -1,
+                    columnCountStep: -1
+                });
+
+                if (leftDirectionCheckResult.winner) {
+                    return leftDirectionCheckResult;
                 }
 
-                let redTokenCheckResult = tokenCheck(rowIndex, columnIndex, BoardToken.RED);
-                if (redTokenCheckResult.winLine.length > 0) {
-                    return redTokenCheckResult;
+                let rightDirectionCheckResult = this.countInALine(board, {
+                    startRowIndex: rowIndex,
+                    startColumnIndex: columnIndex,
+                    rowCountStep: -1,
+                    columnCountStep: 1
+                });
+
+                if (rightDirectionCheckResult.winner) {
+                    return rightDirectionCheckResult;
                 }
             }
         }
