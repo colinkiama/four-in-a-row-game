@@ -374,13 +374,11 @@ export default class FourInARowGame {
         return this.traverseBoardForWin(
             board,
             BoardTraversalDirection.HORIZONTAL,
-            (board, rowIndex, columnIndex) => {
-                return this.tryFindWinningLine(board, {
-                    startRowIndex: rowIndex,
-                    startColumnIndex: columnIndex,
-                    columnCountStep: -1,
-                });
-            }
+            (board, rowIndex, columnIndex) => this.tryFindWinningLine(board, {
+                startRowIndex: rowIndex,
+                startColumnIndex: columnIndex,
+                columnCountStep: -1,
+            })
         );
     }
 
