@@ -1,6 +1,6 @@
 "use strict";
 
-import { BoardDimensions, BoardToken, GameStatus, MoveStatus, PlayerColor } from "./constants/index.js";
+import { BoardDimensions, BoardToken, BoardTraversalDirection, GameStatus, MoveStatus, PlayerColor } from "./constants/index.js";
 
 export default class FourInARowGame {
     startingColor;
@@ -332,22 +332,31 @@ export default class FourInARowGame {
         };
     }
 
-    checkForVerticalWin(board) {
-        if (BoardDimensions.ROWS < BoardDimensions.WIN_LINE_LENGTH) {
-            return {
-                winLine: []
-            };
-        }
-
-        let additionalBoardPositions = BoardDimensions.ROWS - BoardDimensions.WIN_LINE_LENGTH;
-        for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
-            for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > -1; rowIndex--) {
-                return this.tryFindWinningLine(board, {
-                    startRowIndex: rowIndex,
-                    startColumnIndex: columnIndex,
-                    rowCountStep: -1,
-                });
-            }
+    traverseBoardForWin(board, direction, winCheckCallback) {
+        let additionalBoardPositions = 0;
+        switch (direction) {
+            case BoardTraversalDirection.HORIZONTAL:
+                additionalBoardPositions = BoardDimensions.COLUMNS - BoardDimensions.WIN_LINE_LENGTH;
+                for (let rowIndex = 0; rowIndex < BoardDimensions.ROWS; rowIndex++) {
+                    for (let columnIndex = BoardDimensions.COLUMNS - 1; columnIndex - additionalBoardPositions > -1; columnIndex--) {
+                        let winCheckResult = winCheckCallback(board, rowIndex, columnIndex);
+                        if (winCheckResult.winner) {
+                            return winCheckResult;
+                        }
+                    }
+                }
+                break;
+            case BoardTraversalDirection.VERTICAL:
+                additionalBoardPositions = BoardDimensions.ROWS - BoardDimensions.WIN_LINE_LENGTH;
+                for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
+                    for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > -1; rowIndex--) {
+                        let winCheckResult = winCheckCallback(board, rowIndex, columnIndex);
+                        if (winCheckResult.winner) {
+                            return winCheckResult;
+                        }
+                    }
+                }
+                break;
         }
 
         return {
@@ -362,58 +371,81 @@ export default class FourInARowGame {
             };
         }
 
-        let additionalBoardPositions = BoardDimensions.COLUMNS - BoardDimensions.WIN_LINE_LENGTH;
-        for (let rowIndex = 0; rowIndex < BoardDimensions.ROWS; rowIndex++) {
-            for (let columnIndex = BoardDimensions.COLUMNS - 1; columnIndex - additionalBoardPositions > -1; columnIndex--) {
+        return this.traverseBoardForWin(
+            board,
+            BoardTraversalDirection.HORIZONTAL,
+            (board, rowIndex, columnIndex) => {
                 return this.tryFindWinningLine(board, {
                     startRowIndex: rowIndex,
                     startColumnIndex: columnIndex,
                     columnCountStep: -1,
                 });
             }
-        }
-
-        return {
-            winLine: []
-        };
+        );
     }
 
-    checkForDiagonalWin(board) {
-        if (BoardDimensions.COLUMNS < BoardDimensions.WIN_LINE_LENGTH || BoardDimensions.ROWS < BoardDimensions.WIN_LINE_LENGTH) {
+    checkForVerticalWin(board) {
+        if (BoardDimensions.ROWS < BoardDimensions.WIN_LINE_LENGTH) {
             return {
                 winLine: []
             };
         }
 
-        let additionalBoardPositions = BoardDimensions.ROWS - BoardDimensions.WIN_LINE_LENGTH;
-        for (let columnIndex = 0; columnIndex < BoardDimensions.COLUMNS; columnIndex++) {
-            for (let rowIndex = BoardDimensions.ROWS - 1; rowIndex - additionalBoardPositions > -1; rowIndex--) {
-                let leftDirectionCheckResult = this.tryFindWinningLine(board, {
-                    startRowIndex: rowIndex,
-                    startColumnIndex: columnIndex,
-                    rowCountStep: -1,
-                    columnCountStep: -1
-                });
+        return this.traverseBoardForWin(
+            board,
+            BoardTraversalDirection.VERTICAL,
+            (board, rowIndex, columnIndex) => this.tryFindWinningLine(board, {
+                startRowIndex: rowIndex,
+                startColumnIndex: columnIndex,
+                rowCountStep: -1,
+            })
+        );
+    }
 
-                if (leftDirectionCheckResult.winner) {
-                    return leftDirectionCheckResult;
-                }
-
-                let rightDirectionCheckResult = this.tryFindWinningLine(board, {
-                    startRowIndex: rowIndex,
-                    startColumnIndex: columnIndex,
-                    rowCountStep: -1,
-                    columnCountStep: 1
-                });
-
-                if (rightDirectionCheckResult.winner) {
-                    return rightDirectionCheckResult;
-                }
-            }
+    checkForDiagonalWin(board) {
+        if (BoardDimensions.COLUMNS < BoardDimensions.WIN_LINE_LENGTH
+            || BoardDimensions.ROWS < BoardDimensions.WIN_LINE_LENGTH) {
+            return {
+                winLine: []
+            };
         }
 
-        return {
-            winLine: []
-        };
+        return this.traverseBoardForWin(
+            board,
+            BoardTraversalDirection.VERTICAL,
+            (board, rowIndex, columnIndex) => {
+                if (rowIndex + 1 >= BoardDimensions.WIN_LINE_LENGTH
+                    && columnIndex + 1 >= BoardDimensions.WIN_LINE_LENGTH) {
+                    let leftDirectionCheckResult = this.tryFindWinningLine(board, {
+                        startRowIndex: rowIndex,
+                        startColumnIndex: columnIndex,
+                        rowCountStep: -1,
+                        columnCountStep: -1
+                    });
+
+                    if (leftDirectionCheckResult.winner) {
+                        return leftDirectionCheckResult;
+                    }
+                }
+
+                if (rowIndex + 1 >= BoardDimensions.WIN_LINE_LENGTH
+                    && columnIndex + BoardDimensions.WIN_LINE_LENGTH - 1 < BoardDimensions.COLUMNS) {
+                    let rightDirectionCheckResult = this.tryFindWinningLine(board, {
+                        startRowIndex: rowIndex,
+                        startColumnIndex: columnIndex,
+                        rowCountStep: -1,
+                        columnCountStep: 1
+                    });
+
+                    if (rightDirectionCheckResult.winner) {
+                        return rightDirectionCheckResult;
+                    }
+                }
+
+                return {
+                    winLine: []
+                }
+            }
+        )
     }
 } 
