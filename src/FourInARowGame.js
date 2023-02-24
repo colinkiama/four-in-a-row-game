@@ -1,6 +1,6 @@
 "use strict";
 
-import { BoardDimensions, BoardToken, BoardTraversalDirection, GameStatus, MoveStatus, PlayerColor } from "./constants/index.js";
+import { BoardDimensions, BoardToken, GameStatus, MoveStatus, PlayerColor } from "./constants/index.js";
 
 export default class FourInARowGame {
     startingColor;

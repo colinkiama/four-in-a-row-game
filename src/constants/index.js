@@ -29,8 +29,3 @@ export const BoardToken = {
     YELLOW: 1,
     RED: 2,
 };
-
-export const BoardTraversalDirection = {
-    HORIZONTAL: 'horizontal',
-    VERTICAL: 'vertical',
-};
