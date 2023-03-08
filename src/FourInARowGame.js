@@ -87,7 +87,7 @@ export default class FourInARowGame {
                 break;
             case GameStatus.DRAW:
             case GameStatus.WIN:
-                // The game is over at thispoint so
+                // The game is over at this point so
                 // re-evaluate the latest board, returning the same game status
                 // and board details. 
                 return this.evaluateGame(this.history[this.history.length - 1]);
@@ -176,7 +176,7 @@ export default class FourInARowGame {
             }
         }
 
-        // From this point, we can assume that a succesful move was made and the game will
+        // From this point, we can assume that a successful move was made and the game will
         // continue on.
         return {
             board: board,
