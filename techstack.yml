@@ -1,7 +1,8 @@
 repo_name: colinkiama/four-in-a-row
 report_id: c681bfb7b987903d63af42b606c93a4b
+version: 0.1
 repo_type: Public
-timestamp: '2023-11-12T07:11:47+00:00'
+timestamp: '2024-01-05T08:49:40+00:00'
 requested_by: colinkiama
 provider: github
 branch: master
@@ -16,6 +17,7 @@ tools:
   category: Languages & Frameworks
   sub_category: Languages
   image_url: https://img.stackshare.io/service/1209/javascript.jpeg
+  detection_source_url: https://github.com/colinkiama/four-in-a-row
   detection_source: Repo Metadata
 - name: Git
   description: Fast, scalable, distributed revision control system
@@ -25,4 +27,5 @@ tools:
   category: Build, Test, Deploy
   sub_category: Version Control System
   image_url: https://img.stackshare.io/service/1046/git.png
+  detection_source_url: https://github.com/colinkiama/four-in-a-row
   detection_source: Repo Metadata
